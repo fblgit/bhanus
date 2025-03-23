@@ -31,7 +31,7 @@ def main():
         mcp_host = config["mcp"].get("host", "0.0.0.0")
         mcp_port = config["mcp"].get("port", 6000)
         mcp_server_url = f"http://{mcp_host}:{mcp_port}"
-        log_level = config.get("logging", {}).get("level", "INFO")
+        log_level = config.get("logging", {}).get("level", "DEBUG")
         registry_file = config["registry"]["path"]
 
         # Initialize and start the MCP server
@@ -66,48 +66,50 @@ def main():
         define_template = load_prompt_template("define_function", verbose=True)
         define_prompt = format_prompt(
             define_template,
-            name="report_writer",
-            description="Writes a report from summarized content as an agent",
-            input={"summaries": "list"},
+            name="web_search_summary",
+            description="Searches in Google, Fetches the Text of each result and create a summary of each link.",
+            input={"query": "string"},
             output="string",
             type="agent"
         )
         generator = engine.generate_with_interception(define_prompt, interceptor, max_tokens=100)
         define_result = "".join(list(generator)).strip()
-        expected_format = r"\[registered\]report_writer\[/registered\]"
+        expected_format = r"\[registered\]web_search_summary\[/registered\]"
         if not validator.validate(define_result, expected_format, template_name="define_function"):
-            raise ValueError(f"Function definition failed: expected '[registered]report_writer[/registered]', got '{define_result}'")
+            raise ValueError(f"Function definition failed: expected '[registered]web_search_summary[/registered]', got '{define_result}'")
         logger.info("Function registration result: '%s'", define_result)
 
         # Phase 2: Generate agent list for the task using agent_factory
         logger.info("Generating agent list with agent_factory...")
-        goal = "summarize code and write a report"
-        agent_template = load_prompt_template("agent_factory", verbose=True)
-        agent_prompt = format_prompt(agent_template, task=goal)
-        generator = engine.generate_with_interception(agent_prompt, interceptor, max_tokens=200)
-        agent_result = "".join(list(generator)).strip()
-        parsed_agents = { 'agents': f'{agent_result}'.split('\n')[0].replace(',','').replace(']', '').replace('[', '').split(' ') }
-        #parsed_agents = parse_agent_output(agent_result, "agent_factory", engine=engine, verbose=True)
-        if not parsed_agents or "agents" not in parsed_agents:
-            raise ValueError(f"Agent factory failed: '{agent_result}'")
-        logger.info("Agent list: %s", parsed_agents["agents"])
+        goals = ["fetch and iterate over google search results urls", "write a report with the results summaries"]
+        for goal in goals:
+            agent_template = load_prompt_template("agent_factory", verbose=True)
+            agent_prompt = format_prompt(agent_template, task=goal, agents=mcp_client.list_tools(include_local=True))
+            generator = engine.generate_with_interception(agent_prompt, interceptor, max_tokens=200)
+            agent_result = "".join(list(generator)).strip()
+            parsed_agents = { 'agents': f'{agent_result}'.split('\n')[0].split(']')[0].replace(',','').replace(']', '').replace('[', '').split(' ') }
+            #parsed_agents = parse_agent_output(agent_result, "agent_factory", engine=engine, verbose=True)
+            if not parsed_agents or "agents" not in parsed_agents:
+                raise ValueError(f"Agent factory failed: '{agent_result}'")
+            logger.info("Agent list: %s", parsed_agents["agents"])
 
         # Phase 3: Select tools dynamically with tools_picker
-        logger.info("Selecting tools with tools_picker...")
-        tools_template = load_prompt_template("tools_picker", verbose=True)
-        tools_prompt = format_prompt(tools_template, task=goal, tools=mcp_client.list_tools(include_local=True))
-        generator = engine.generate_with_interception(tools_prompt, interceptor, max_tokens=200)
-        tools_result = "".join(list(generator)).strip()
-        parsed_tools = { 'selected_tools': f'{tools_result}'.split('\n')[0].replace(',','').replace(']', '').replace('[', '').split(' ') }
-        #parsed_tools = parse_agent_output(tools_result, "tools_picker", engine=engine, verbose=True)
-        if not parsed_tools or "selected_tools" not in parsed_tools:
-            raise ValueError(f"Tools picker failed: '{tools_result}'")
-        selected_tools = parsed_tools["selected_tools"]
-        logger.info("Selected tools: %s", selected_tools)
+        for goal in goals:
+            logger.info("Selecting tools with tools_picker...")
+            tools_template = load_prompt_template("tools_picker", verbose=True)
+            tools_prompt = format_prompt(tools_template, task=goal, tools=mcp_client.list_tools(include_local=True))
+            generator = engine.generate_with_interception(tools_prompt, interceptor, max_tokens=200)
+            tools_result = "".join(list(generator)).strip()
+            parsed_tools = { 'selected_tools': f'{tools_result}'.split('\n')[0].split(']')[0].replace(',','').replace(']', '').replace('[', '').split(' ') }
+            #parsed_tools = parse_agent_output(tools_result, "tools_picker", engine=engine, verbose=True)
+            if not parsed_tools or "selected_tools" not in parsed_tools:
+                raise ValueError(f"Tools picker failed: '{tools_result}'")
+            selected_tools = parsed_tools["selected_tools"]
+            logger.info("Selected tools: %s", selected_tools)
 
         # Phase 4: Execute scraping pipeline with dynamic tools
         logger.info("Executing scraping pipeline with dynamic tools...")
-        goal = "Search on google how to make good code reports. Fetch and parse each URL result and create a summary of each page"
+        goal = "Search on google the latest AI news and write a report"
         pipeline = ScrapingPipeline(mcp_client, engine, verbose=True)
         selected_tools = ['google_search', 'fetch_text_url', 'report_writer']
         #summaries = pipeline.execute(goal, selected_tools=None, max_urls=2)
@@ -143,5 +145,5 @@ def main():
 
 if __name__ == "__main__":
     # Set up logging for main execution
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+    logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
     main()

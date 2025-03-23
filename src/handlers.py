@@ -276,3 +276,21 @@ def calculator(config: Dict, params: Dict) -> float:
         return float(result)
     except Exception as e:
         raise RuntimeError(f"Failed to evaluate expression '{expression}': {str(e)}")
+
+@register_handler(
+    name="web_search_summary",
+    description="Perform a Google search and return a summary of the results.",
+    input_schema={"query": "string", "limit": "int", "start": "int"},
+    output="list"
+)
+def web_search_summary(config: Dict, params: Dict) -> Dict:
+    query = params.get("query")
+    if not query:
+        raise ValueError("query parameter is required")
+    limit = params.get("limit", config.get("default_limit", 2))
+    start = params.get("start", 0)
+    google_results = google_search(config, params)
+    results = []
+    for google_result in google_results:
+        results.append(fetch_text_url(config, params))
+    return { 'results': results }

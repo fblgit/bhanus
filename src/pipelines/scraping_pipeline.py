@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class ScrapingPipeline:
     """Manages a web scraping workflow using dynamically selected MCP tools."""
 
-    def __init__(self, mcp_client: Any, engine: Any = None, verbose: bool = False, log_level: str = "INFO"):
+    def __init__(self, mcp_client: Any, engine: Any = None, verbose: bool = False, log_level: str = "DEBUG"):
         """
         Initialize the ScrapingPipeline with an MCP client and optional VLLM engine.
 
@@ -30,7 +30,7 @@ class ScrapingPipeline:
         self.interceptor = None
         if engine:
             self.interceptor = GenerationInterceptor(mcp_client, engine, verbose=verbose, log_level=log_level)
-        logging.basicConfig(level=getattr(logging, log_level.upper(), logging.INFO),
+        logging.basicConfig(level=getattr(logging, log_level.upper(), logging.DEBUG),
                            format="%(asctime)s - %(levelname)s - %(message)s")
         if self.verbose:
             logger.info("Initialized ScrapingPipeline with MCPClient and %s engine", "active" if engine else "no")
@@ -68,7 +68,9 @@ class ScrapingPipeline:
                 tools_prompt = format_prompt(tools_template, task=goal, tools=all_tools)
                 generator = self.engine.generate_with_interception(tools_prompt, self.interceptor, max_tokens=200)
                 tools_result = "".join(list(generator)).strip()
-                parsed_tools = parse_agent_output(tools_result, "tools_picker", engine=self.engine, verbose=self.verbose)
+                parsed_tools = { 'selected_tools': f'{tools_result}'.split('\n')[0].replace(',','').replace(']', '').replace('[', '').split(' ') }
+                #tools_result = "".join(list(generator)).strip()
+                #parsed_tools = parse_agent_output(tools_result, "tools_picker", engine=self.engine, verbose=self.verbose)
                 if not parsed_tools or "selected_tools" not in parsed_tools:
                     raise RuntimeError(f"tools_picker failed to return valid tool list: '{tools_result}'")
                 selected_tools = parsed_tools["selected_tools"]
@@ -76,7 +78,7 @@ class ScrapingPipeline:
                     logger.info("Dynamically selected tools: %s", selected_tools)
             elif selected_tools is None:
                 logger.warning("No tools provided and no engine available; using default tools")
-                selected_tools = ["search_from_api", "parse_html", "summarise_text"]
+                selected_tools = ["search_from_api", "parse_html", "summarise_text", "google_search"]
 
             # Validate tool availability
             missing_tools = set(selected_tools) - available_tool_names
@@ -100,8 +102,10 @@ class ScrapingPipeline:
                 logger.debug("Found %d URLs: %s", len(urls), urls)
 
             # Step 3: Process each URL with selected tools
-            parse_tool = next((t for t in selected_tools if "parse" in t.lower()), None)
+            parse_tool = next((t for t in selected_tools if "parse" in t.lower()), None) 
+            parse_tool = parse_tool if parse_tool else next((t for t in selected_tools if "url" in t.lower()), None)
             summarize_tool = next((t for t in selected_tools if "summarise" in t.lower() or "summarize" in t.lower()), None)
+            summarize_tool = summarize_tool if summarize_tool else next((t for t in selected_tools if "writer" in t.lower() or "report" in t.lower()), None)
             if not parse_tool or not summarize_tool:
                 raise RuntimeError(f"Required tools missing: parse_tool={parse_tool}, summarize_tool={summarize_tool}")
 
@@ -188,11 +192,14 @@ class ScrapingPipeline:
             List[str]: List of URLs extracted from the result.
         """
         if isinstance(result, dict):
-            if 'results' in result:
-                result = result.get('results')
+            if 'result' in result:
+                result = result['result']
+            logger.info("Extracting URLs from: %s", result)
             urls = result.get("urls", result.get("result", result.get("items", [])))
+            if "results" in result:
+                urls = [item["url"] for item in result["results"] if "url" in item]
             if isinstance(urls, str):
-                urls = [urls]
+                return [urls]
             elif not isinstance(urls, list):
                 logger.warning("Invalid URL format from '%s': %s", tool_name, urls)
                 return []

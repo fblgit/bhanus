@@ -20,7 +20,7 @@ class MCPClient:
     """Client for interacting with an MCP server via JSON-RPC 2.0 with tool registration and agent execution."""
 
     def __init__(self, config_path: str = "config/config.yaml", engine: Any = None,
-                 interceptor: Any = None, verbose: bool = False, log_level: str = "INFO"):
+                 interceptor: Any = None, verbose: bool = False, log_level: str = "DEBUG"):
         """
         Initialize the MCP client with a persistent HTTP session, engine, and interceptor.
 
@@ -43,7 +43,7 @@ class MCPClient:
             raise ValueError("Invalid config.yaml: must contain 'mcp' section")
         self.function_registry_file = config.get("registry", {}).get("path", "function_registry.json")
         self.default_url = f"http://{config['mcp'].get('host', '0.0.0.0')}:{config['mcp'].get('port', 6000)}"
-        logging.basicConfig(level=getattr(logging, log_level.upper(), logging.INFO),
+        logging.basicConfig(level=getattr(logging, log_level.upper(), logging.DEBUG),
                             format="%(asctime)s - %(levelname)s - %(message)s")
         if self.verbose:
             logger.debug("Initialized MCPClient with registry path: %s, default URL: %s, %s engine, %s interceptor",

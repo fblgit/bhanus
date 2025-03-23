@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class PromptValidator:
     """Validates model output against expected formats from Jinja2 templates or registry."""
 
-    def __init__(self, engine: Any = None, verbose: bool = False, log_level: str = "INFO"):
+    def __init__(self, engine: Any = None, verbose: bool = False, log_level: str = "DEBUG"):
         """
         Initialize the PromptValidator with optional engine for registry access.
 
@@ -25,7 +25,7 @@ class PromptValidator:
         """
         self.engine = engine
         self.verbose = verbose
-        logging.basicConfig(level=getattr(logging, log_level.upper(), logging.INFO),
+        logging.basicConfig(level=getattr(logging, log_level.upper(), logging.DEBUG),
                            format="%(asctime)s - %(levelname)s - %(message)s")
         if self.verbose:
             logger.debug("Initialized PromptValidator with log level %s and %s engine", log_level, "active" if engine else "no")

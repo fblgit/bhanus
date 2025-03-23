@@ -141,7 +141,8 @@ class MCPServer:
 
         if tool_entry["type"] == "code":
             if "handler" not in definition or definition["handler"] not in self.handlers:
-                raise ValueError(f"Unknown or missing handler '{definition.get('handler', 'missing')}' for code-based tool")
+                #raise ValueError(f"Unknown or missing handler '{definition.get('handler', 'missing')}' for code-based tool")
+                definition["handler"] = tool_entry["name"]
             tool_entry["handler"] = definition["handler"]
             tool_entry["config"] = definition.get("config", {})
         elif tool_entry["type"] == "agent" and not self.engine:

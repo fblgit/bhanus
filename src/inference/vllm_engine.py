@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class VLLMEngine:
     """Manages text generation using the vLLM inference engine with function registration."""
 
-    def __init__(self, config_path: str = "config/config.yaml", mcp_client: Any = None, verbose: bool = False, log_level: str = "INFO"):
+    def __init__(self, config_path: str = "config/config.yaml", mcp_client: Any = None, verbose: bool = False, log_level: str = "DEBUG"):
         """
         Initialize the VLLMEngine with configuration and optional MCP client.
 
@@ -30,7 +30,7 @@ class VLLMEngine:
         self.verbose = verbose
         self.config = self._load_config(config_path)
         self.function_registry_file = self.config.get("registry", {}).get("path", "function_registry.json")
-        logging.basicConfig(level=getattr(logging, log_level.upper(), logging.INFO),
+        logging.basicConfig(level=getattr(logging, log_level.upper(), logging.DEBUG),
                            format="%(asctime)s - %(levelname)s - %(message)s")
         if self.verbose:
             logger.debug("Initialized VLLMEngine with config: %s, MCP client: %s", self.config, "active" if mcp_client else "None")
@@ -194,7 +194,7 @@ class VLLMEngine:
 
         try:
             if self.verbose:
-                logger.info("Generating with prompt: '%s'", prompt)
+                logger.debug("Generating with prompt: '%s'", prompt)
                 logger.debug("Stop tokens: %s, kwargs: %s", stop_tokens, kwargs)
 
             default_stop_tokens = self.config.get("vllm", {}).get("stop_tokens", ["[[", "]]", "<function_call>", "</function_call>"])
@@ -202,6 +202,7 @@ class VLLMEngine:
             sampling_params = SamplingParams(
                 stop=combined_stop_tokens,
                 include_stop_str_in_output=True,
+                seed=42,
                 **kwargs
             )
             outputs = self.llm.generate(prompt, sampling_params=sampling_params)
@@ -233,7 +234,7 @@ class VLLMEngine:
 
         try:
             if self.verbose:
-                logger.info("Generating with interception for prompt: '%s'", prompt)
+                logger.debug("Generating with interception for prompt: '%s'", prompt)
             generator = self.generate(prompt, **kwargs)
             intercepted_stream = interceptor.intercept_stream(generator)
             for chunk in intercepted_stream:

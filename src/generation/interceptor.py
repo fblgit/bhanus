@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class GenerationInterceptor:
     """Intercepts the generation stream to detect and handle function calls and definitions."""
 
-    def __init__(self, mcp_client: Any, engine: Any, verbose: bool = False, log_level: str = "INFO"):
+    def __init__(self, mcp_client: Any, engine: Any, verbose: bool = False, log_level: str = "DEBUG"):
         """
         Initialize the GenerationInterceptor with MCP client and VLLM engine.
 
@@ -28,7 +28,7 @@ class GenerationInterceptor:
         self.engine = engine
         self.verbose = verbose
         self.buffer = ""
-        logging.basicConfig(level=getattr(logging, log_level.upper(), logging.INFO),
+        logging.basicConfig(level=getattr(logging, log_level.upper(), logging.DEBUG),
                            format="%(asctime)s - %(levelname)s - %(message)s")
         if self.verbose:
             logger.debug("Initialized GenerationInterceptor with MCPClient and VLLMEngine at level %s", log_level)
