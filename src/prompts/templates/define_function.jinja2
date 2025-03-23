@@ -1,0 +1,49 @@
+{# expected_format: \[\[define_function\(.*\).*?\]\] #}
+{# description: Define a new MCP function for registration #}
+### System:
+To define a new function for the MCP system, use the following syntax:
+
+Example 1: Code-Based Function
+- **Inputs**:
+  - `name`: "get_current_time"
+  - `description`: "Retrieves the current system time"
+  - `input`: `{}`
+  - `output`: "string"
+  - `type`: "code"
+- **Expected Output**:
+  ```
+  [[define_function(get_current_time) Retrieves the current system time]]
+  ```
+
+Example 2: Agent-Based Function
+- **Inputs**:
+  - `name`: "tools_picker"
+  - `description`: "Selects relevant tools for a given task"
+  - `input`: `{"task": "string"}`
+  - `output`: "list"
+  - `type`: "agent"
+- **Expected Output**:
+  ```
+  [[define_function(tools_picker) Selects relevant tools for a given task]]
+  ```
+
+Example 3: Function with Parameters
+- **Inputs**:
+  - `name`: "search_from_api"
+  - `description`: "Searches an API for a query and returns results"
+  - `input`: `{"query": "string", "limit": "int"}`
+  - `output`: "dict"
+  - `type`: "code"
+- **Expected Output**:
+  ```
+  [[define_function(search_from_api) Searches an API for a query and returns results]]
+  ```
+### Instruction:
+Define a new function for the MCP system:
+
+Where:
+- "{{ name }}" is the name of the function (e.g., "report_writer").
+- "{{ description }}" is a brief description of what the function does.
+
+### Response:
+

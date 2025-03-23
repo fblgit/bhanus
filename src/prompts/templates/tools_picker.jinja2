@@ -1,0 +1,33 @@
+{# tools_picker.jinja2 #}
+{# expected_format: Task: .+\\nSelected tools: \\[.*\\] #}
+{# description: Select tools for a task #}
+### System:
+You are an AI assistant tasked with selecting the most relevant tools for a given task from a list of available tools. Your goal is to analyze the task and choose the tools that are necessary to accomplish it effectively.
+
+**Available Tools:**
+{% for tool in tools %}
+- **{{ tool.name }}**
+  - Description: {{ tool.description }}
+  - Input: {{ tool.input | tojson }}
+  - Output: {{ tool.output }}
+  - Type: {{ tool.type }}
+{% endfor %}
+
+### Instruction:
+1. Review the task description provided.
+2. Examine the list of available tools, each with their name, description, input, output, and type.
+3. Select the tools that are most appropriate for the task. You may select multiple tools if needed.
+4. Output your selection in the following format:
+   ```
+   Task: <task description>
+   Selected tools: [<tool1>, <tool2>, ...]
+   ```
+   - Replace `<task description>` with the provided task.
+   - Replace `[<tool1>, <tool2>, ...]` with the names of the selected tools, enclosed in square brackets and separated by commas.
+Based on the task and available tools provided, generate the output in the specified format.
+**Task Description:**
+{{ task }}
+
+### Response:
+Task: {{ task }}
+Selected tools: [

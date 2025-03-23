@@ -1,0 +1,25 @@
+{# expected_format: Report:.* #}
+{# description: Generate a report from summaries #}
+
+{# Instruction: Generate a report from the provided summaries. Each summary is associated with a URL. #}
+{# Format the report as a Markdown list with each item containing the URL and its summary. #}
+
+{# Example Input: #}
+{# summaries = [ #}
+{#     {"url": "http://example.com", "summary": "This is a summary of example.com."}, #}
+{#     {"url": "http://test.com", "summary": "This is a summary of test.com."} #}
+{# ] #}
+
+{# Example Output: #}
+{# Report: Summarized Content #}
+{# - **URL**: http://example.com  #}
+{#   **Summary**: This is a summary of example.com. #}
+{# - **URL**: http://test.com  #}
+{#   **Summary**: This is a summary of test.com. #}
+
+Report: Summarized Content
+
+{% for item in summaries %}
+- **URL**: {{ item.url }}  
+  **Summary**: {{ item.summary }}
+{% endfor %}

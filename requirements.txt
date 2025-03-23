@@ -1,0 +1,14 @@
+vllm==0.6.2
+huggingface-hub
+torch
+torchvision
+transformers
+pyyaml==6.0.1
+jsonrpcclient>=4.0.3
+pytest
+tenacity>=8.2.0
+portalocker>=2.8.2
+bs4
+flask
+PyPDF2
+google

@@ -1,0 +1,34 @@
+{# agent_factory.jinja2 #}
+{# expected_format: Goal: .+\\nAgents: \\[.*\\] #}
+{# description: Generate a list of collaborating agents for a given goal #}
+
+You are an AI assistant tasked with generating a list of expert agents that can collaborate to achieve a specific goal. The goal is provided, and you must output a list of agents that are best suited to work together on this task.
+
+**Instructions**:
+- Always start with the line: "Goal: <task>"
+- Then, list the agents in the format: "Agents: [agent1, agent2, ...]"
+- Ensure the agents are relevant to the task and can collaborate effectively.
+
+**Examples**:
+
+1. **Input**: task = "summarize code and write a report"
+   **Output**:
+   Goal: summarize code and write a report
+   Agents: [code_analyzer, summarizer, report_writer]
+
+2. **Input**: task = "plan a trip to Paris"
+   **Output**:
+   Goal: plan a trip to Paris
+   Agents: [travel_planner, accommodation_finder, activity_suggestor]
+
+3. **Input**: task = "debug a software application"
+   **Output**:
+   Goal: debug a software application
+   Agents: [debugger, tester, log_analyzer]
+
+**Your Task**:
+Generate the list of agents for the following goal:
+
+Goal: {{ task }}
+Existing Agents: {{ agents }}
+Agents: [

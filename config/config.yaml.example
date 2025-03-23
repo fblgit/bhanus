@@ -1,0 +1,31 @@
+# ./config/config.yaml
+vllm:
+  model: "Qwen/Qwen2.5-1.5B-Instruct"
+  gpu: true
+  stop_tokens:
+    - "]]"
+    - "</function_call>"
+mcp:
+  host: "127.0.0.1"
+  port: 6000
+  server: "http://127.0.0.1:6000"
+logging:
+  level: "DEBUG"
+registry:
+  path: "function_registry.json"
+handlers:
+  fetch_url:
+    timeout: 15
+  fetch_file:
+    storage_path: "tmp/mcp_files"
+    timeout: 15
+  write_file:
+    storage_path: "tmp/mcp_files"
+  run_snippet:
+    storage_path: "tmp/mcp_files"
+    timeout: 30
+  google_search:
+    google_api_key: "YOUR_GOOGLE_API_KEY"
+    google_cse_id: "YOUR_GOOGLE_CSE_ID"
+    default_limit: 5
+    timeout: 10
