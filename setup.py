@@ -6,7 +6,7 @@ setup(
     version="0.1.0",
     packages=find_packages(),
     install_requires=[
-        "vllm==0.6.2",          # Stable version as of December 2024; adjust based on vLLM releases
+        "vllm==0.28.0",          # Stable version as of December 2024; adjust based on vLLM releases
         "pyyaml==6.0.1",        # Retained for config compatibility, though Jinja2 will replace YAML prompts
         "jsonrpcclient==4.0.3",  # Pinned for MCP communication stability
         "jinja2==3.1.4",        # Pinned latest stable as of March 2025 for advanced templating
